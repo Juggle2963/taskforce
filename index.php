@@ -1,20 +1,22 @@
 <?php
+           //Bort tagning av uppgifter
+           
            if($_SERVER["REQUEST_METHOD"] === "POST"){
             if(isset($_POST['delete-index'])){
 
-            // $arr = explode(' ', file_get_contents('data.txt'));
-            $arr = file('data.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); //lagt till FIN - FEL
+            
+            $arr = file('data.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); //läser in - skapar array, varje rad är ett element
 
-            $index = $_POST["delete-index"] ?? '';
-            // print_r($POST);
+            $index = $_POST["delete-index"] ?? ''; //vid delete vilken rad som ska raderas
+          
 
-            unset($arr[$index]);
+            unset($arr[$index]);   // tar bort index elementet och omindexerar med array_values
 
-           $arr = array_values($arr);
+           $arr = array_values($arr); 
 
             $data = implode(PHP_EOL, $arr) . PHP_EOL;
 
-            file_put_contents('data.txt', $data);
+            file_put_contents('data.txt', $data); //skriver tillbaka uppdaerad lista till filen
             file_put_contents('d.txt', $index, FILE_APPEND);
 
 
@@ -23,20 +25,23 @@
             }
         }
 
+        //Hantera inmatning av uppgifter
+
         if($_SERVER["REQUEST_METHOD"] === "POST"){
             if(isset($_POST['vad'])){
 
-            $vad = trim($_POST['vad'] ?? '');
+            $vad = trim($_POST['vad'] ?? ''); //Tar bort onödiga space
             // print_r($POST);
 
             if(!empty($vad)){
                 $data = implode(' ', [$vad]) . PHP_EOL;
-                file_exists('data.txt') ? file_put_contents('data.txt', $data, FILE_APPEND) : file_put_contents('data.txt', $data);
+                file_exists('data.txt') ? file_put_contents('data.txt', $data, FILE_APPEND) : file_put_contents('data.txt', $data); // Skapa fil om den inte finns annars lägg till längst ner - lägger till input från form
             }
             
         }
+        //Rensa tomma rader i filen
         if(file_exists('data.txt')){
-          $eraseEmpty =  file('data.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+          $eraseEmpty =  file('data.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES); //Skriver fil till array
           $erased = implode(PHP_EOL, $eraseEmpty) . PHP_EOL;
           file_put_contents('data.txt', $erased);
         }
@@ -173,6 +178,8 @@
         }
         .input{
             width:80%;
+            display: flex;
+            justify-content: right;
         }
     </style>
 </head>
@@ -186,35 +193,48 @@
                 <label for="name">vad</label>
                 <textarea name="vad" id="vad" rows="5" cols="40" placeholder="<---- TaskForce ---> skriv in uppgift"></textarea>
 
-                    <input type="submit" value="submit">
+                    <input type="submit" >
                 </form>
             </div>
+
             <div class="tasks">
-                <div class="task-box">
-                    <?php
+                <?php
 
-                $arr = array_filter(file('data.txt'), function($line) {
-                    return trim($line) !== '';
-                });
-                  
-                    foreach ($arr as $key => $value){
+                        $arr = array_filter(file('data.txt'), function($line) {
+                        return trim($line) !== ''; //så att allt hamnar på samma rad i output div
+                        });
+                        ?>
+                    <div class="task-box">
+                     <?php foreach ($arr as $key => $value): ?>
                         
-                        echo "<div class='info' > <div>" . $value . "</div class='input'> <form action='' method='POST'>
-                         <input type='hidden' name='delete-index' value='$key'>
-                        <button class='btn' type='submit'>Ta bort</button>
+                         <?php echo "
+                         <div class='info' >
+                           <div>" 
+                             . $value . " 
+                           </div>" .
+                          "<div class='input'> 
+                          <form action='' method='POST'>
+                             <input type='hidden' name='delete-index' value='$key'>
+                             <button class='btn' type='submit'>Ta bort</button>
+                             </form>
+                         </div>";
+                          ?>
+                        
+                        <?php unset($_POST['vad']);?>
     
-                    </form>
-                    </div>";
-                        
-                    }
-                    ?>
+                    
+                    </div>
+                        <?php endforeach ?>
                 </div>
+
             </div>
-
-        </div>
-   
-
-    </main>
-    </body>
+            
+            
+            
+            
+        </main>
+       
+    
+</body>
 
 </html>
